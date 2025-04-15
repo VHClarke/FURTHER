@@ -1,40 +1,86 @@
-#FURTHER
- Take Home Assessment
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+📝 GTM + Next.js Tracking Exercise
+Overview
+This exercise demonstrates my ability to integrate Google Tag Manager (GTM) into a Next.js App Router application, while tracking:
 
-## Getting Started
+A custom event on button click (dataLayer.push())
+Pageviews during client-side navigation (SPA routing)
+I also maintained version control via Git and documented blockers I encountered and overcame throughout the process.
 
-First, run the development server:
+✅ Tasks Completed
+Requirement	Status	Notes
+Set up GTM in Next.js	✅	GTM script injected using <Script> from next/script
+Use Git for version control	✅	Full Git history available in connected GitHub repo
+Track custom event (dataLayer.push())	✅	Fires on "Request Demo" button click
+Track pageviews on route change (Bonus)	✅	Implemented via Next.js router.events in a reusable tracker
+🛠️ Setup & Implementation Details
+GTM Integration:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The GTM ID was stored as an environment variable using .env.local for secure access via process.env.NEXT_PUBLIC_GTM_ID.
+Used next/script with strategy="afterInteractive" to inject GTM safely on the client side.
+Added a <noscript> fallback for non-JavaScript users.
+window.dataLayer was initialized in a browser-safe way to avoid SSR issues.
+Custom Event Tracking:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+On "Request Demo" button click, window.dataLayer?.push() fires a request_demo event.
+Event confirmed using GTM Preview Mode and browser console.
+SPA Pageview Tracking (Bonus):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Added a reusable route change tracker component that listens to router.events.
+On every route change, a page_view event is pushed to dataLayer.
+🧱 Challenges & Blockers
+Before diving into development, I ran into several environment-level blockers:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+🔄 Outdated Tooling:
 
-## Learn More
+My local dev environment was out of date, preventing me from running the app (npm run dev failed).
+I updated:
+Node.js
+Homebrew
+Codecs (to fix internal system toolchains)
+🔐 GitHub Sync Issues:
 
-To learn more about Next.js, take a look at the following resources:
+My terminal wasn’t authenticated with GitHub.
+I reconnected my terminal to GitHub by updating SSH credentials and reinitializing my remote origin to successfully push code.
+Once all these foundational issues were resolved, I was able to dive into the implementation without further friction.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🔧 Code Highlights
+GTM Injection (App Router layout)
+<Script
+  id="gtm-init"
+  strategy="afterInteractive"
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','${GTM_ID}');
+    `,
+  }}
+/>
+Button Click Event
+const handleClick = () => {
+  window.dataLayer?.push({
+    event: 'request_demo',
+    timestamp: new Date().toISOString(),
+  });
+}
+SPA Route Change Tracker
+useEffect(() => {
+  const handleRouteChange = (url) => {
+    window.dataLayer?.push({
+      event: 'page_view',
+      page_url: url,
+    });
+  }
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+  router.events.on('routeChangeComplete', handleRouteChange)
+  return () => router.events.off('routeChangeComplete', handleRouteChange)
+}, [])
+🤖 AI Usage
+Yes, I used ChatGPT to support this exercise. Specifically, I used it to:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 728bd64 (Initial commit from Create Next App)
+Troubleshoot environment setup blockers
+Clarify best practices for GTM with SSR in Next.js App Router
+Reword and structure this README to be clean and professional
+I made sure to fully understand each step and implementation detail so I can speak confidently about my approach in any interview or technical discussion.
